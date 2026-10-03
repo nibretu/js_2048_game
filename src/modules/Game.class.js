@@ -46,7 +46,14 @@ export class Game {
   }
 
   moveRight() {
-    this.move((row) => this.mergeLine(row.reverse()).reverse());
+    this.move((row) => {
+      const result = this.mergeLine(row.reverse());
+
+      return {
+        line: result.line.reverse(),
+        gainedScore: result.gainedScore,
+      };
+    });
   }
 
   moveUp() {
@@ -54,7 +61,14 @@ export class Game {
   }
 
   moveDown() {
-    this.moveColumns((column) => this.mergeLine(column.reverse()).reverse());
+    this.moveColumns((column) => {
+      const result = this.mergeLine(column.reverse());
+
+      return {
+        line: result.line.reverse(),
+        gainedScore: result.gainedScore,
+      };
+    });
   }
 
   mergeLine(line) {
@@ -78,9 +92,10 @@ export class Game {
       result.push(0);
     }
 
-    this.score += gainedScore;
-
-    return result;
+    return {
+      line: result,
+      gainedScore,
+    };
   }
 
   move(transform) {
@@ -89,10 +104,18 @@ export class Game {
     }
 
     const oldState = this.state.map((row) => [...row]);
+    let gainedScore = 0;
 
-    this.state = this.state.map((row) => transform([...row]));
+    this.state = this.state.map((row) => {
+      const result = transform([...row]);
+
+      gainedScore += result.gainedScore;
+
+      return result.line;
+    });
 
     if (!this.statesEqual(oldState, this.state)) {
+      this.score += gainedScore;
       this.addRandomTile();
       this.checkStatus();
     }
@@ -104,17 +127,21 @@ export class Game {
     }
 
     const oldState = this.state.map((row) => [...row]);
+    let gainedScore = 0;
 
     for (let column = 0; column < 4; column++) {
       const values = this.state.map((row) => row[column]);
       const result = transform([...values]);
 
+      gainedScore += result.gainedScore;
+
       for (let row = 0; row < 4; row++) {
-        this.state[row][column] = result[row];
+        this.state[row][column] = result.line[row];
       }
     }
 
     if (!this.statesEqual(oldState, this.state)) {
+      this.score += gainedScore;
       this.addRandomTile();
       this.checkStatus();
     }
@@ -183,6 +210,7 @@ export class Game {
 
     return false;
   }
+
   statesEqual(first, second) {
     return first.every(
       (row, rowIndex) =>

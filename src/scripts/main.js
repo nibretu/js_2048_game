@@ -8,7 +8,7 @@ import { Game } from '../modules/Game.class.js';
 
 const game = new Game();
 
-const board = document.querySelector('.game-field');
+const board = document.querySelector('.game-field tbody');
 const score = document.querySelector('.game-score');
 const startButton = document.querySelector('.start');
 
@@ -18,8 +18,12 @@ function render() {
   board.innerHTML = '';
 
   state.forEach((row) => {
+    const tableRow = document.createElement('tr');
+
+    tableRow.classList.add('field-row');
+
     row.forEach((value) => {
-      const cell = document.createElement('div');
+      const cell = document.createElement('td');
 
       cell.classList.add('field-cell');
 
@@ -28,8 +32,10 @@ function render() {
         cell.textContent = value;
       }
 
-      board.appendChild(cell);
+      tableRow.appendChild(cell);
     });
+
+    board.appendChild(tableRow);
   });
 
   score.textContent = game.getScore();
